@@ -201,7 +201,6 @@ streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
   var racunValue = racunSelected.options[racunSelected.selectedIndex].value;
   console.log(racunSelected);
   console.log(racunValue);*/
-  //console.log(neki);
   
   pesmiIzRacuna(1, function(pesmi) {
       strankaIzRacuna(1, function(podatki) {
