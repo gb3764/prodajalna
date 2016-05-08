@@ -27,7 +27,6 @@ streznik.use(
 );
 
 var razmerje_usd_eur = 0.877039116;
-var logIn = 0;
 
 function davcnaStopnja(izvajalec, zanr) {
   switch (izvajalec) {
@@ -48,7 +47,7 @@ function davcnaStopnja(izvajalec, zanr) {
 
 // Prikaz seznama pesmi na strani
 streznik.get('/', function(zahteva, odgovor) {
-  if (logIn == 0) {
+  if (zahteva.session.login != 1) {
     
     odgovor.redirect('/prijava');
   }
@@ -238,7 +237,7 @@ streznik.get('/prijava', function(zahteva, odgovor) {
 // Prikaz nakupovalne košarice za stranko
 streznik.post('/stranka', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
-  logIn = 1;
+  zahteva.session.login = 1;
   form.parse(zahteva, function (napaka1, polja, datoteke) {
     odgovor.redirect('/')
   });
@@ -246,7 +245,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
 
 // Odjava stranke
 streznik.post('/odjava', function(zahteva, odgovor) {
-    logIn = 0;
+    zahteva.session.login = 0;
     odgovor.redirect('/prijava') 
 })
 
