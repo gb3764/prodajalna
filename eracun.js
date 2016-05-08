@@ -27,6 +27,7 @@ streznik.use(
 );
 
 var razmerje_usd_eur = 0.877039116;
+var strankaId;
 
 function davcnaStopnja(izvajalec, zanr) {
   switch (izvajalec) {
@@ -169,6 +170,19 @@ var strankaIzRacuna = function(racunId, callback) {
     })
 }
 
+var strankaIzRacuna2 = function(racunId, callback) {
+    pb.all("SELECT Customer.* FROM Customer, Invoice \
+            WHERE Customer.CustomerId = " + racunId,
+    function(napaka, vrstice) {
+      if (napaka) {
+        callback(false);
+      } else {
+        //console.log(vrstice);
+        callback(vrstice);
+      }
+    })
+}
+
 // Izpis računa v HTML predstavitvi na podlagi podatkov iz baze
 streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
   
@@ -202,18 +216,21 @@ streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) {
 // Izpis računa v HTML predstavitvi ali izvorni XML obliki
 streznik.get('/izpisiRacun/:oblika', function(zahteva, odgovor) {
   pesmiIzKosarice(zahteva, function(pesmi) {
-    if (!pesmi) {
-      odgovor.sendStatus(500);
-    } else if (pesmi.length == 0) {
-      odgovor.send("<p>V košarici nimate nobene pesmi, \
-        zato računa ni mogoče pripraviti!</p>");
-    } else {
-      odgovor.setHeader('content-type', 'text/xml');
-      odgovor.render('eslog', {
-        vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
-        postavkeRacuna: pesmi
-      })  
-    }
+    strankaIzRacuna2(strankaId, function(podatki) {
+      if (!pesmi) {
+        odgovor.sendStatus(500);
+      } else if (pesmi.length == 0) {
+        odgovor.send("<p>V košarici nimate nobene pesmi, \
+         zato računa ni mogoče pripraviti!</p>");
+     } else {
+        odgovor.setHeader('content-type', 'text/xml');
+        odgovor.render('eslog', {
+         vizualiziraj: zahteva.params.oblika == 'html' ? true : false,
+         postavkeRacuna: pesmi,
+         stranka: podatki
+       })  
+      }
+    })
   })
 })
 
@@ -303,6 +320,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
   zahteva.session.login = 1;
   form.parse(zahteva, function (napaka1, polja, datoteke) {
+    strankaId = polja.seznamStrank;
     odgovor.redirect('/')
   });
 })
